@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Prompt', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-main);
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ส่วนสรุปยอดเงิน (Dashboard Summary) */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card .title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .card .amount {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .amount.total { color: var(--primary); }
+        .amount.income { color: var(--success); }
+        .amount.expense { color: var(--danger); }
+
+        /* ส่วนฟอร์ม และ ตาราง */
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* สไตล์ฟอร์มกรอกข้อมูล */
+        .form-box {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+        }
+
+        .form-box h3 {
+            margin-bottom: 1.2rem;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        btn-submit {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        btn-submit:hover {
+            background: #4338ca;
+        }
+
+        /* สไตล์ตารางบอกรายการ */
+        .table-box {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+
+        .table-box h3 {
+            margin-bottom: 1.2rem;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f5f9;
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Badge แสดงประเภท */
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .badge.income {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge.expense {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* ปุ่มลบรายการ */
+        .btn-delete {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn-delete:hover {
+            text-decoration: underline;
+        }
+
+        .empty-text {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Money Dashboard</h1>
+            <p style="color: var(--text-muted);">จัดการรายรับ-รายจ่ายของคุณอย่างง่ายดาย</p>
+        </header>
+
+        <div class="summary-cards">
+            <div class="card">
+                <span class="title">ยอดเงินคงเหลือ</span>
+                <span class="amount total" id="totalBalance">0.00 บาท</span>
+            </div>
+            <div class="card">
+                <span class="title">รายรับทั้งหมด</span>
+                <span class="amount income" id="totalIncome">0.00 บาท</span>
+            </div>
+            <div class="card">
+                <span class="title">รายจ่ายทั้งหมด</span>
+                <span class="amount expense" id="totalExpense">0.00 บาท</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="form-box">
+                <h3>เพิ่มรายการใหม่</h3>
+                <form id="moneyForm">
+                    <div class="form-group">
+                        <label for="name">ชื่อรายการ</label>
+                        <input type="text" id="name" class="form-control" placeholder="เช่น เงินเดือน, ค่าชาไข่มุก" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">จำนวนเงิน (บาท)</label>
+                        <input type="number" id="amount" class="form-control" min="0.01" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="type">ประเภท</label>
+                        <select id="type" class="form-control" required>
+                            <option value="income">รายรับ</option>
+                            <option value="expense">รายจ่าย</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">บันทึกรายการ</button>
+                </form>
+            </div>
+
+            <div class="table-box">
+                <h3>ประวัติรายการ</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ชื่อรายการ</th>
+                            <th>ประเภท</th>
+                            <th>จำนวนเงิน</th>
+                            <th style="text-align: center;">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionList">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ดึงองค์ประกอบต่างๆ จาก HTML
+        const moneyForm = document.getElementById('moneyForm');
+        const nameInput = document.getElementById('name');
+        const amountInput = document.getElementById('amount');
+        const typeSelect = document.getElementById('type');
+        const transactionList = document.getElementById('transactionList');
+        
+        const totalBalance = document.getElementById('totalBalance');
+        const totalIncome = document.getElementById('totalIncome');
+        const totalExpense = document.getElementById('totalExpense');
+
+        // โหลดข้อมูลจาก localStorage หรือถ้าไม่มีให้เป็นอาร์เรย์ว่าง []
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+        // ฟังก์ชันอัปเดตตัวเลขสรุปและตาราง
+        function updateDashboard() {
+            // ล้างข้อมูลเก่าในตารางออกก่อน
+            transactionList.innerHTML = '';
+
+            let incomeSum = 0;
+            let expenseSum = 0;
+
+            if (transactions.length === 0) {
+                transactionList.innerHTML = `<tr><td colspan="4" class="empty-text">ยังไม่มีข้อมูลรายการในขณะนี้</td></tr>`;
+            } else {
+                // วนลูปสร้างแถวในตารางตามข้อมูลที่มี
+                transactions.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // คำนวณยอดรวมแยกประเภท
+                    if (item.type === 'income') {
+                        incomeSum += item.amount;
+                    } else {
+                        expenseSum += item.amount;
+                    }
+
+                    // จัดรูปแบบข้อมูลสำหรับใส่ในตาราง
+                    const typeBadge = item.type === 'income' ? '<span class="badge income">รายรับ</span>' : '<span class="badge expense">รายจ่าย</span>';
+                    const amountText = item.type === 'income' ? `+${item.amount.toLocaleString()}` : `-${item.amount.toLocaleString()}`;
+                    const amountClass = item.type === 'income' ? 'income' : 'expense';
+
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td>${typeBadge}</td>
+                        <td class="amount ${amountClass}" style="font-weight:500;">${amountText} ฿</td>
+                        <td style="text-align: center;">
+                            <button class="btn-delete" onclick="deleteTransaction(${index})">ลบ</button>
+                        </td>
+                    `;
+                    transactionList.appendChild(row);
+                });
+            }
+
+            // คำนวณยอดเงินคงเหลือ
+            const balanceSum = incomeSum - expenseSum;
+
+            // แสดงผลยอดเงินบนการ์ดสรุป (ใส่คอมมาแยกหลักร้อยหลักพันให้สวยงาม)
+            totalBalance.textContent = `${balanceSum.toLocaleString(undefined, {minimumFractionDigits: 2})} บาท`;
+            totalIncome.textContent = `${incomeSum.toLocaleString(undefined, {minimumFractionDigits: 2})} บาท`;
+            totalExpense.textContent = `${expenseSum.toLocaleString(undefined, {minimumFractionDigits: 2})} บาท`;
+
+            // บันทึกข้อมูลลง localStorage เสมอเมื่อมีการเปลี่ยนแปลง
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+
+        // ฟังก์ชันเมื่อกดปุ่มบันทึกฟอร์ม
+        moneyForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // กันไม่ให้หน้าเว็บรีเฟรชเอง
+
+            // ดึงค่าจาก input มาสร้างออบเจกต์รายการใหม่
+            const newTransaction = {
+                name: nameInput.value,
+                amount: parseFloat(amountInput.value),
+                type: typeSelect.value
+            };
+
+            // เพิ่มเข้าสู่อาร์เรย์หลัก
+            transactions.push(newTransaction);
+            
+            // อัปเดตหน้าจอ
+            updateDashboard();
+
+            // ล้างค่าในฟอร์มเพื่อพร้อมพิมพ์รายการต่อไป
+            moneyForm.reset();
+        });
+
+        // ฟังก์ชันลบรายการ
+        function deleteTransaction(index) {
+            if(confirm('คุณแน่ใจใช่ไหมที่จะลบรายการนี้?')) {
+                transactions.splice(index, 1); // ลบข้อมูลตามตำแหน่ง index
+                updateDashboard(); // อัปเดตหน้าจอใหม่
+            }
+        }
+
+        // สั่งให้ระบบทำงานครั้งแรกเพื่อโหลดข้อมูลเก่าขึ้นมาแสดง (ถ้ามี)
+        updateDashboard();
+    </script>
+</body>
+</html>
